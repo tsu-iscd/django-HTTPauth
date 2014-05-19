@@ -37,7 +37,6 @@ def token_validate(request,token,dic_all):
     if len(policy)==0 and len(b_key)==0:
         for k in request.session['csrf_tokens']:
             if k == token:
-                print 'Val - '+k
                 return True
         return False
 
@@ -84,7 +83,6 @@ def token_validate(request,token,dic_all):
         return False
 
     res_token =res_str+';'+sts+';'+objid+';'+subid+';'+request.method
-    print 'Validation: '+res_token
 
     sc_tok = sfunc_mess(base64.b64decode(b_key),res_token)
     
@@ -150,13 +148,11 @@ def auth_render(request, *args, **kwargs):
 
                         res_token=res_str+tstamp+';'+base64.b64encode(f.policy['object'])+';'+subid+';POST'
 
-                        print 'Generation: '+res_token
 
                         sc_tok = sfunc_mess(gen_key,res_token)
                         f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(sc_tok),initial=sc_tok)
                     except AttributeError:
                         res_token = get_random_string(SCSRF_RAND_LENGTH)
-                        print 'Gen - '+res_token
                         f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(res_token),initial=res_token)
                         request.session['csrf_tokens'].append(res_token)
                         	
