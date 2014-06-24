@@ -144,7 +144,9 @@ def auth_render(request, *args, **kwargs):
                             else:
                                 subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
                         except KeyError:
-                            subid = request.session.session_key
+                            if not request.session.exists(request.session.session_key):
+                                request.session.create()
+                                subid=request.session.session_key
 
                         res_token=res_str+tstamp+';'+base64.b64encode(f.policy['object'])+';'+subid+';POST'
 
