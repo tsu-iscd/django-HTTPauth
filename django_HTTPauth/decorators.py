@@ -11,6 +11,6 @@ class policy_name_protection():
             else:
                 target.policy['name_protection']=self.np
         except AttributeError:
-            target.policy={'name_protection',self.np}
+            target.policy={'name_protection':self.np}
         return target
     
