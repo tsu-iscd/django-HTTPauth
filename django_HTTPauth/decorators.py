@@ -35,7 +35,7 @@ class policy_replay_protection():
                     target.policy['replay_protection']['enable']=self.rp
                     target.policy['replay_protection']['interval']=self.rt
             else:
-                target.policy['name_protection']={'enable':self.rp,'interval':self.rt}
+                target.policy['replay_protection']={'enable':self.rp,'interval':self.rt}
         except AttributeError:
-            target.policy={'name_protection':{'enable':self.rp,'interval':self.rt}}
+            target.policy={'replay_protection':{'enable':self.rp,'interval':self.rt}}
         return target
