@@ -77,9 +77,9 @@ def token_validate(request,token,dic_all):
         subid = ''
         if policy.has_key('subject')==True:
             subid = request.COOKIES[policy['subject']]
-        elif subid=='':
+        elif subid=='' or subid==None:
             subid=request.session.session_key
-        elif subid=='':
+        elif subid=='' or subid==None:
             subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
     except KeyError:
         return False
@@ -143,10 +143,13 @@ def auth_render(request, *args, **kwargs):
                             subid = ''
                             if policy.has_key('subject')==True:
                                 subid = request.COOKIES[policy['subject']]
-                            elif subid=='':
+                            elif subid=='' or subid==None:
                                 subid=request.session.session_key
-                            elif subid=='':
+                            elif subid=='' or subid==None:
                                 subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
+                            if not request.session.exists(request.session.session_key):
+                                request.session.create()
+                                subid=request.session.session_key
                         except KeyError:
                             if not request.session.exists(request.session.session_key):
                                 request.session.create()
