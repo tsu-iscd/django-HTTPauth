@@ -144,8 +144,8 @@ def auth_render(request, *args, **kwargs):
 
                         try:
                             subid = ''
-                            if policy.has_key('subject')==True:
-                                subid = request.COOKIES[policy['subject']]
+                            if f.policy.has_key('subject')==True:
+                                subid = request.COOKIES[f.policy['subject']]
                             elif subid=='' or subid==None:
                                 subid=request.session.session_key
                             elif subid=='' or subid==None:
