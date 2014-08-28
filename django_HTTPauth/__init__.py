@@ -132,7 +132,10 @@ def auth_render(request, *args, **kwargs):
                             if f.policy['parameter_protection'][fl]['action'] == 'validate':
                                 fl_val.append(fl+'=#')
                             elif f.policy['parameter_protection'][fl]['action']=='control':
-                                fl_val.append(fl+'='+f.policy['parameter_protection'][fl]['value'])
+                                try:
+                                    fl_val.append(fl+'='+f.initial[fl])
+                                except KeyError:
+                                    print(fl+' field is not under control')
 
                         fl_val.sort()
 
