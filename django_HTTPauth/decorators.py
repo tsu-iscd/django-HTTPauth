@@ -48,16 +48,16 @@ class policy():
     def __call__(self,target):
         tmp_pol = {}
         for x in self.__dict__.keys():
-            if len(self.__dict__[x])==2 and isinstance(self.__dict__[x][0],str)==True and isinstance(self.__dict__[x][1],str)==True:
+            if len(self.__dict__[x])==1 and isinstance(self.__dict__[x][0],str)==True:
                 if self.__dict__[x][0].lower()=='control' or self.__dict__[x][0].lower()=='c':
-                    tmp_pol[x]={'action':'control','value':self.__dict__[x][1]}
+                    tmp_pol[x]={'action':'control',}
                 elif self.__dict__[x][1].lower()=='control' or self.__dict__[x][1].lower()=='c':
-                    tmp_pol[x]={'action':'control','value':self.__dict__[x][0]}
-                    
+                    tmp_pol[x]={'action':'control',}      
+            elif len(self.__dict__[x])==2 and isinstance(self.__dict__[x][0],str)==True or isinstance(self.__dict__[x][1],str)==True:
                 if self.__dict__[x][0].lower()=='validate' or self.__dict__[x][0].lower()=='v':
                     tmp_pol[x]={'action':'validate','value':self.__dict__[x][1]}
                 elif self.__dict__[x][1].lower()=='validate' or self.__dict__[x][1].lower()=='v':
-                    tmp_pol[x]={'action':'validate','value':self.__dict__[x][0]} 
+                    tmp_pol[x]={'action':'validate','value':self.__dict__[x][0]}
         try:
             if target.policy.has_key('parameter_protection')==True:
                 target.policy['parameter_protection'].update(tmp_pol)
