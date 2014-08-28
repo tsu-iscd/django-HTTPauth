@@ -28,7 +28,7 @@ REASON_BAD_REFERER = "Referer checking failed - %s does not match %s."
 REASON_NO_CSRF_COOKIE = "CSRF cookie not set."
 REASON_BAD_TOKEN = "CSRF token missing or incorrect."
 
-
+CSRF_KEY_LENGTH=16
 
 def _get_failure_view():
     return get_callable(settings.CSRF_FAILURE_VIEW)
