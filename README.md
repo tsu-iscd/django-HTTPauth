@@ -18,6 +18,6 @@ HTTP messages authentication mechanism for Django based on HMAC and attribute ba
 * Reducing attacks surface
 
 ##Bibliography
-[Jim Monico, Eoin Keary. Form Processing and Workflows](http://secappdev.org/handouts/2014/Jim%20Manico/HTML%20Forms%20and%20Workflows%20v3.pdf)
-[TrustWave’s SpiderLabs. HMAC Token Protection](http://blog.spiderlabs.com/2014/01/modsecurity-advanced-topic-of-the-week-hmac-token-protection.html)
-[TrustWave’s SpiderLabs. Reducing web application attack surface](http://blog.spiderlabs.com/2012/07/reducing-web-apps-attack-surface.html)
+*[Jim Monico, Eoin Keary. Form Processing and Workflows](http://secappdev.org/handouts/2014/Jim%20Manico/HTML%20Forms%20and%20Workflows%20v3.pdf)
+*[TrustWave’s SpiderLabs. HMAC Token Protection](http://blog.spiderlabs.com/2014/01/modsecurity-advanced-topic-of-the-week-hmac-token-protection.html)
+*[TrustWave’s SpiderLabs. Reducing web application attack surface](http://blog.spiderlabs.com/2012/07/reducing-web-apps-attack-surface.html)
