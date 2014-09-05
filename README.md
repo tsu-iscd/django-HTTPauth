@@ -3,9 +3,9 @@ django-HTTPauth
 
 ##Brief description
 
-HTTP messages authentication mechanism for Django based on HMAC and attribute based access control (ABAC).
+HTTP messages authentication mechanism for Django based on HMAC and attribute based access control (ABAC)
 
-Main features:
+##Main features:
 * Strict protection against CSRF attack
 * CSRF-tokens protection based on the following
   * token time-to-live - protection against replay attacks
