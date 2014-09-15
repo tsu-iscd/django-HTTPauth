@@ -7,13 +7,14 @@ HTTP messages authentication mechanism for Django based on HMAC and attribute ba
 
 ##Main features:
 * Strict protection against CSRF attack
-* CSRF-tokens protection based on the following
+* CSRF-tokens protection based on the following properties
   * token time-to-live - protection against replay attacks
   * token randomization - protection against BREACH-like attacks
   * token scope - protection against token leakage
 * Integrity control of parameter names and values
 * Validation of client-side generated data
 * Basic authorization
+* Support sessionless and sessionful modes
 * Can be employed in configurations without sharing or persistent session support
 * Reducing attacks surface
 
