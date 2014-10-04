@@ -22,19 +22,23 @@ def token_validate(request,token,dic_all):
     if len(dic_all)==0:
         return False
 
+    if 'sess_key' not in request.session.keys():
+        return False 
+
+    tokens = base64.b64decode(token).split(';')
+    if len(tokens) != 2:
+        return False
+
     policy = {}
-    b_key = ''
-    sts=''
+    sts=tokens[1]
 
     for polid in request.session['forms'].keys():
         if re.sub(base64.b64decode(polid),'#',request.build_absolute_uri())=='#':
             policy = request.session['forms'][polid]['policy']
-            b_key = request.session['forms'][polid]['auth_key']
-            sts = request.session['forms'][polid]['time']
             objid = polid
 
 
-    if len(policy)==0 and len(b_key)==0:
+    if len(policy)==0:
         for k in request.session['csrf_tokens']:
             if k == token:
                 request.session['csrf_tokens'].remove(k)
@@ -87,7 +91,9 @@ def token_validate(request,token,dic_all):
 
     res_token =res_str+';'+sts+';'+objid+';'+subid+';'+request.method
 
-    sc_tok = sfunc_mess(base64.b64decode(b_key),res_token)
+
+    
+    sc_tok = sfunc_mess(base64.b64decode(request.session['sess_key']),res_token,';'+sts)
     
     if sc_tok == token:
         return True
@@ -95,9 +101,9 @@ def token_validate(request,token,dic_all):
     return False
 
 
-def sfunc_mess(key,message):
+def sfunc_mess(key,message,tstamp):
     shash = hmac.new(key,msg=message,digestmod=hashlib.sha256).digest()
-    return base64.b64encode(shash).decode()
+    return base64.b64encode(shash+tstamp).decode()
 
 
 def auth_render(request, *args, **kwargs):
@@ -111,12 +117,12 @@ def auth_render(request, *args, **kwargs):
 
                     try:
 
-                        tstamp=''
-                        if f.policy.get('replay_protection')['enable']==True:
-                            tstamp = ';'+str(int(round(time.time()*1000)))
-                        rndfile = Random.new()
-                        gen_key = rndfile.read(BLOCK_SIZE)
-                        b_key=base64.b64encode(gen_key)
+                        tstamp = ';'+str(int(round(time.time()*1000)))
+                        
+                        if 'sess_key' not in request.session.keys():
+                            rndfile = Random.new()
+                            gen_key = rndfile.read(BLOCK_SIZE)
+                            request.session['sess_key'] = base64.b64encode(gen_key)
 
                         lf_all = []
                         for x in f.fields:
@@ -140,7 +146,8 @@ def auth_render(request, *args, **kwargs):
 
                         fl_val.sort()
                         
-                        request.session['forms'][base64.b64encode(f.policy['object'])]={'policy':f.policy,'auth_key':b_key,'time':tstamp[1:]}
+                        if base64.b64encode(f.policy['object']) not in request.session['forms']: 
+                            request.session['forms'][base64.b64encode(f.policy['object'])]={'policy':f.policy,}
                         res_str+='&'.join(fl_val)
 
                         try:
@@ -162,7 +169,7 @@ def auth_render(request, *args, **kwargs):
                         res_token=res_str+tstamp+';'+base64.b64encode(f.policy['object'])+';'+subid+';POST'
 
 
-                        sc_tok = sfunc_mess(gen_key,res_token)
+                        sc_tok = sfunc_mess(base64.b64decode(request.session['sess_key']),res_token,tstamp)
                         f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(sc_tok),initial=sc_tok)
                     except AttributeError:
                         res_token = get_random_string(SCSRF_RAND_LENGTH)

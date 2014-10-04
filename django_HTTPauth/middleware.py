@@ -9,9 +9,9 @@ from __future__ import unicode_literals
 import logging
 import itertools
 import re
-import django_HTTPauth
 import copy
 
+from django_HTTPauth import token_validate
 from django.conf import settings
 from django.core.urlresolvers import get_callable
 from django.utils.cache import patch_vary_headers
@@ -38,8 +38,6 @@ def _get_new_csrf_key():
     return get_random_string(CSRF_KEY_LENGTH)
 
 
-
-
 def validate_auth_token(request,auth_token):
 
     dic_all = {} 
@@ -47,8 +45,7 @@ def validate_auth_token(request,auth_token):
         if x!='auth_token' and x!='auth_policy':
             dic_all[x]=request.POST[x]
 
-
-    if django_HTTPauth.token_validate(request,auth_token,dic_all) == False:
+    if token_validate(request,auth_token,dic_all) == False:
         return False
     return True
  
