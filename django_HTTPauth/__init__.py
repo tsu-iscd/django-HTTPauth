@@ -27,11 +27,11 @@ def token_validate(request,token,dic_all):
     sts=''
 
     for polid in request.session['forms'].keys():
-        if polid == token:
+        if re.sub(base64.b64decode(polid),'#',request.build_absolute_uri())=='#':
             policy = request.session['forms'][polid]['policy']
             b_key = request.session['forms'][polid]['auth_key']
             sts = request.session['forms'][polid]['time']
-            objid = base64.b64encode(policy['object'])
+            objid = polid
 
 
     if len(policy)==0 and len(b_key)==0:
@@ -90,7 +90,6 @@ def token_validate(request,token,dic_all):
     sc_tok = sfunc_mess(base64.b64decode(b_key),res_token)
     
     if sc_tok == token:
-        del request.session['forms'][token]
         return True
 
     return False
@@ -141,6 +140,7 @@ def auth_render(request, *args, **kwargs):
 
                         fl_val.sort()
                         
+                        request.session['forms'][base64.b64encode(f.policy['object'])]={'policy':f.policy,'auth_key':b_key,'time':tstamp[1:]}
                         res_str+='&'.join(fl_val)
 
                         try:
@@ -150,7 +150,7 @@ def auth_render(request, *args, **kwargs):
                             elif subid=='' or subid==None:
                                 subid=request.session.session_key
                             elif subid=='' or subid==None:
-                                subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
+                                subid = request.COOKIES [settings.SESSION_COOKIE_NAME]
                             if not request.session.exists(request.session.session_key):
                                 request.session.create()
                                 subid=request.session.session_key
@@ -164,7 +164,6 @@ def auth_render(request, *args, **kwargs):
 
                         sc_tok = sfunc_mess(gen_key,res_token)
                         f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(sc_tok),initial=sc_tok)
-                        request.session['forms'][sc_tok]={'policy':f.policy,'auth_key':b_key,'time':tstamp[1:]}
                     except AttributeError:
                         res_token = get_random_string(SCSRF_RAND_LENGTH)
                         f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(res_token),initial=res_token)
