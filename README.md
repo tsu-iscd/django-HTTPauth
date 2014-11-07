@@ -41,8 +41,8 @@ If policy is not configured then the random number will be generated to protect 
 Example:
 ```python
 class ClientForm(forms.Form):
-    first\_name = forms.CharField(max_length=40)
-    last\_name = forms.CharField(max_length=40)
+    first_name = forms.CharField(max_length=40)
+    last_name = forms.CharField(max_length=40)
     code = forms.IntegerField()
     policy = {
               'object': 'http://127.0.0.1:8000/[a-z]+/',
@@ -53,7 +53,7 @@ class ClientForm(forms.Form):
               'name_protection':True,
                'parameter_protection':
               {
-               'first\_name': 
+               'first_name': 
               {
                   'action':'validate',
                   'value':'[a-z]+'
@@ -75,12 +75,12 @@ Decorators can be used as an alternative mechanism of form configuration. There 
 
 Example:
 ```python
-@policy\_name_protection(True)
-@policy\_replay\_protection(30)
+@policy_name_protection(True)
+@policy_replay_protection(30)
 @policy(code=('control',))
 class ClientForm(forms.Form):
-    first\_name = forms.CharField(max_length=40)
-    last\_name = forms.CharField(max_length=40)
+    first_name = forms.CharField(max_length=40)
+    last_name = forms.CharField(max_length=40)
     code = forms.IntegerField()
     policy = {
               'object': 'http://127.0.0.1:8000/[a-z]+/',
