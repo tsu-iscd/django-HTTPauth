@@ -82,10 +82,10 @@ def token_validate(request,token,dic_all):
         subid = ''
         if policy.has_key('subject')==True:
             subid = request.COOKIES[policy['subject']]
-        elif subid=='' or subid==None:
-            subid=request.session.session_key
+        else:
+            subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
             if subid=='' or subid==None:
-                subid = request.COOKIES[settings.SESSION_COOKIE_NAME]
+                subid=request.session.session_key
     except KeyError:
         return False
 
@@ -107,6 +107,8 @@ def sfunc_mess(key,message,tstamp):
 
 
 def auth_render(request, *args, **kwargs):
+    if not request.session.exists(request.session.session_key):
+        request.session.create()
     request.session['forms']={}
     request.session['csrf_tokens']=[]
     for cont in args:
@@ -154,13 +156,10 @@ def auth_render(request, *args, **kwargs):
                             subid = ''
                             if f.policy.has_key('subject')==True:
                                 subid = request.COOKIES[f.policy['subject']]
-                            elif subid=='' or subid==None:
-                                subid=request.session.session_key
+                            else:
+                                subid = request.COOKIES [settings.SESSION_COOKIE_NAME]
                                 if subid=='' or subid==None:
-                                    subid = request.COOKIES [settings.SESSION_COOKIE_NAME]
-                            if not request.session.exists(request.session.session_key):
-                                request.session.create()
-                                subid=request.session.session_key
+                                    subid=request.session.session_key
                         except KeyError:
                             if not request.session.exists(request.session.session_key):
                                 request.session.create()
