@@ -75,22 +75,19 @@ class HttpAuthMiddleware(object):
             return None
 
         if request.method == 'POST':
-            try:
-                csrf_token = _sanitize_token(request.COOKIES[settings.CSRF_COOKIE_NAME])
-                request_csrf_token = request.POST.get('csrfmiddlewaretoken', '')
-                if not constant_time_compare(request_csrf_token, csrf_token):
-                    return self._reject(request, REASON_BAD_TOKEN)
-            except KeyError:
-                auth_token = _sanitize_token(request.POST.get('auth_token',''))
+            auth_token = _sanitize_token(request.POST.get('auth_token',''))
             
-                if auth_token is None:
-                    return self._reject(request, REASON_NO_CSRF_COOKIE)
-            
-                if auth_token == "":
+            if auth_token is None:
+                try:
+                    csrf_token = _sanitize_token(request.COOKIES[settings.CSRF_COOKIE_NAME])
+                    request_csrf_token = request.POST.get('csrfmiddlewaretoken', '')
+                    if not constant_time_compare(request_csrf_token, csrf_token):
+                        return self._reject(request, REASON_BAD_TOKEN)
+                except KeyError:
                     return self._reject(request, REASON_BAD_TOKEN)
 
-                if not validate_auth_token(request,auth_token):
-                    return self._reject(request, REASON_BAD_TOKEN)
+            if not validate_auth_token(request,auth_token):
+                return self._reject(request, REASON_BAD_TOKEN)
 
         return self._accept(request)
 
