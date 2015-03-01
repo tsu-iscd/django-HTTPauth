@@ -26,6 +26,13 @@ def token_validate(request,token,dic_all):
         return False 
 
     tokens = base64.b64decode(token).split(';')
+    
+    if len(tokens) == 1:
+        if token in request.session['csrf_tokens']:
+            request.session['csrf_tokens'].remove(token)
+            return True
+        return False
+    
     if len(tokens) != 2:
         return False
 
