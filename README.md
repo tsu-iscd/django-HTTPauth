@@ -17,10 +17,21 @@ HTTP messages authentication mechanism for Django based on HMAC and attribute ba
 * Support sessionless and sessionful modes
 * Can be employed in configurations without sharing or persistent session support
 * Reducing attacks surface
+* COOKIE manipulation protection
 
 ##Installation
 1. Download and unpack django-HTTPauth to your django project.
-2. Replace 'django.middleware.csrf.CsrfViewMiddleware' line by 'signed\_csrf.middleware.HttpAuthMiddleware' in MIDDLEWARE\_CLASSES tuple of settings.py.
+2. Replace 'django.middleware.csrf.CsrfViewMiddleware' line by 'signed\_csrf.middleware.HttpAuthMiddleware' in MIDDLEWARE\_CLASSES tuple in settings.py.
+3. Add 'signed\_csrf.middleware.CookieMiddleware' line to the top of MIDDLEWARE\_CLASSES tuple in settings.py.
+4. Add in settings.py the following variables:
+```python
+COOKIE_MIDDLEWARE = {
+ 		'secret_key' :  'eMaeshah6m', #random string which is used for HMAC calculation
+		'controlled_cookies' : ['sessionid','csrftoken'] #names of protected cookies
+ }
+
+LOGOUT_PAGE = "/accounts/logout/" #logout URI
+```
 
 ##Configuration
 There are a few ways to configure policy of the protected form:
