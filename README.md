@@ -23,22 +23,16 @@ HTTP messages authentication mechanism for Django based on HMAC and attribute ba
 1. Download and unpack django-HTTPauth to your django project.
 2. Replace 'django.middleware.csrf.CsrfViewMiddleware' line by 'signed\_csrf.middleware.HttpAuthMiddleware' in MIDDLEWARE\_CLASSES tuple in settings.py.
 3. Add 'signed\_csrf.middleware.CookieMiddleware' line to the top of MIDDLEWARE\_CLASSES tuple in settings.py.
-4. Add in settings.py the following variables:
-```python
-COOKIE_MIDDLEWARE = {
- 		'secret_key' :  'eMaeshah6m', #random string which is used for HMAC calculation
-		'controlled_cookies' : ['sessionid','csrftoken'] #names of protected cookies
- }
-
-LOGOUT_PAGE = "/accounts/logout/" #logout URI
-```
 
 ##Configuration
+
+###HTTP authentication mechanism
+
 There are a few ways to configure policy of the protected form:
 * Use dictionary
 * Use decorators
 
-###Using dictionary
+####Using dictionary
 Add a dictionary with a name policy to the protected form. There are several options which can be used in the policy:
 
 1. **object** - required - identificator of the form. Regexp of form action URL.
@@ -77,7 +71,7 @@ class ClientForm(forms.Form):
              }
 ```
 
-###Using decorators
+####Using decorators
 Decorators can be used as an alternative mechanism of form configuration. There are the following decorators:
 
 1. **name\_protection** - optional - policy\_name_protection(True|False).
@@ -96,6 +90,19 @@ class ClientForm(forms.Form):
     policy = {
               'object': 'http://127.0.0.1:8000/[a-z]+/',
              }
+```
+
+###COOKIES manipulation protection
+Add COOKIE_MIDDLEWARE and LOGOUT_PAGE variables to settings.py.
+
+Example:
+```python
+COOKIE_MIDDLEWARE = {
+        'secret_key' :  'eMaeshah6m', #random string which is used for HMAC calculation
+        'controlled_cookies' : ['sessionid','csrftoken'] #names of protected cookies
+ }
+
+LOGOUT_PAGE = "/accounts/logout/" #logout URI
 ```
 
 ##Bibliography
