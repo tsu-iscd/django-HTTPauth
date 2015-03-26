@@ -39,10 +39,24 @@ def token_validate(request,token,dic_all):
     policy = {}
     sts=tokens[1]
 
-    for polid in request.session['forms'].keys():
-        if re.sub(base64.b64decode(polid),'#',request.build_absolute_uri())=='#':
-            policy = request.session['forms'][polid]['policy']
-            objid = polid
+    fl_np = [k for k in dic_all]
+    fl_np.sort()
+    
+    for ipolid in request.session['forms'].keys():
+        polid = ipolid[1:]
+        if ipolid[0] == '0':
+            if re.sub(base64.b64decode(polid),'#',request.build_absolute_uri())=='#':
+                policy = request.session['forms'][ipolid]['policy']
+                objid = ipolid
+        elif ipolid[0] == '1':
+            if base64.b64decode(polid)=='&'.join(fl_np):
+                policy = request.session['forms'][ipolid]['policy']
+                objid = ipolid
+        elif ipolid[0] == '2':
+            polid_url,polid_params=polid.split(';')
+            if re.sub(base64.b64decode(polid_url),'#',request.build_absolute_uri())=='#' and base64.b64decode(polid_params)=='&'.join(fl_np):
+                policy = request.session['forms'][ipolid]['policy']
+                objid = ipolid
 
 
     if len(policy)==0:
@@ -62,10 +76,7 @@ def token_validate(request,token,dic_all):
         if int(round(time.time()*1000)) - tstamp >= int(time_interval*1000):
             return False
     
-    fl_np = []
     if ncont == True:
-        fl_np = [k for k in dic_all]
-        fl_np.sort()
         res_str += '&'.join(fl_np)+';'
 
     fl_val = []
@@ -97,9 +108,6 @@ def token_validate(request,token,dic_all):
         return False
 
     res_token =res_str+';'+sts+';'+objid+';'+subid+';'+request.method
-
-
-    
     sc_tok = sfunc_mess(base64.b64decode(request.session['sess_key']),res_token,';'+sts)
     
     if sc_tok == token:
@@ -138,6 +146,29 @@ def auth_render(request, *args, **kwargs):
                             lf_all.append(x)
                         lf_all.sort()
                         
+                        policy_id = None
+
+                        obj_id=None
+                        if f.policy.has_key('object_id')==True:
+                            obj_id_str=f.policy.get('object_id')
+                            if obj_id_str == 'url':
+                                obj_id=0
+                                policy_id=str(obj_id)+base64.b64encode(f.policy['object'])
+                            elif obj_id_str == 'parameters' or obj_id_str == 'params':
+                                obj_id=1
+                                policy_id=str(obj_id)+base64.b64encode('&'.join(lf_all))
+                            else:
+                                obj_id=2
+                                policy_id=str(obj_id)+base64.b64encode(f.policy['object'])+';'+base64.b64encode('&'.join(lf_all))
+                        else:
+                            obj_id=1
+                            policy_id=str(obj_id)+base64.b64encode('&'.join(lf_all))
+
+                        if obj_id is None:
+                            res_token = get_random_string(SCSRF_RAND_LENGTH)
+                            f.fields["auth_token"]= forms.CharField(widget=forms.HiddenInput,max_length=len(res_token),initial=res_token)
+                            request.session['csrf_tokens'].append(res_token)
+                        
                         res_str = ''
                         if f.policy.get('name_protection') == True:
                             res_str = '&'.join(lf_all)
@@ -155,8 +186,8 @@ def auth_render(request, *args, **kwargs):
 
                         fl_val.sort()
                         
-                        if base64.b64encode(f.policy['object']) not in request.session['forms']: 
-                            request.session['forms'][base64.b64encode(f.policy['object'])]={'policy':f.policy,}
+                        if policy_id not in request.session['forms']: 
+                            request.session['forms'][policy_id]={'policy':f.policy,}
                         res_str+='&'.join(fl_val)
 
                         try:
@@ -172,7 +203,7 @@ def auth_render(request, *args, **kwargs):
                                 request.session.create()
                                 subid=request.session.session_key
 
-                        res_token=res_str+tstamp+';'+base64.b64encode(f.policy['object'])+';'+subid+';POST'
+                        res_token=res_str+tstamp+';'+policy_id+';'+subid+';POST'
 
 
                         sc_tok = sfunc_mess(base64.b64decode(request.session['sess_key']),res_token,tstamp)
