@@ -66,18 +66,20 @@ def token_validate(request,token,dic_all):
                 return True
         return False
 
-    ncont=policy['name_protection']
-    rprot = policy['replay_protection']
     res_str = ''
 
-    if rprot['enable']==True:
-        time_interval = rprot['interval']
-        tstamp = int(sts) 
-        if int(round(time.time()*1000)) - tstamp >= int(time_interval*1000):
-            return False
+    if policy.has_key('name_protection'):
+        ncont=policy['name_protection']
+        if ncont == True:
+            res_str += '&'.join(fl_np)+';'
     
-    if ncont == True:
-        res_str += '&'.join(fl_np)+';'
+    if policy.has_key('replay_protection'):
+        rprot = policy['replay_protection']
+        if rprot['enable']==True:
+            time_interval = rprot['interval']
+            tstamp = int(sts) 
+            if int(round(time.time()*1000)) - tstamp >= int(time_interval*1000):
+                return False
 
     fl_val = []
     for fl in policy['parameter_protection']:
