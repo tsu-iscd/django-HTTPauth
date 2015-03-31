@@ -126,8 +126,10 @@ def sfunc_mess(key,message,tstamp):
 def auth_render(request, *args, **kwargs):
     if not request.session.exists(request.session.session_key):
         request.session.create()
-    request.session['forms']={}
-    request.session['csrf_tokens']=[]
+    if not request.session.has_key('forms'):
+        request.session['forms']={}
+    if not request.session.has_key('csrf_tokens'):
+        request.session['csrf_tokens']=[]
     for cont in args:
         if type(cont) is dict:
             for key in cont:
