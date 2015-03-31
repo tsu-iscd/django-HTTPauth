@@ -55,7 +55,7 @@ def validate_auth_token(request,auth_token):
     return True
  
 def _sanitize_token(token):
-    token = re.sub('[^a-zA-Z0-9+/=]+', '', force_text(token))
+    token = re.sub('[^a-zA-Z0-9+/=;]+', '', force_text(token))
     if token == '':
         return None
     return token

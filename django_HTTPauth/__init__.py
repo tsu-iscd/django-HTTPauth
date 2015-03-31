@@ -25,7 +25,7 @@ def token_validate(request,token,dic_all):
     if 'sess_key' not in request.session.keys():
         return False 
 
-    tokens = base64.b64decode(token).split(';')
+    tokens = token.split(';')
     
     if len(tokens) == 1:
         if token in request.session['csrf_tokens']:
@@ -120,7 +120,7 @@ def token_validate(request,token,dic_all):
 
 def sfunc_mess(key,message,tstamp):
     shash = hmac.new(key,msg=message,digestmod=hashlib.sha256).digest()
-    return base64.b64encode(shash+tstamp).decode()
+    return base64.b64encode(shash).decode()+tstamp
 
 
 def auth_render(request, *args, **kwargs):
