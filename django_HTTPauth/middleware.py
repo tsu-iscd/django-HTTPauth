@@ -97,11 +97,11 @@ class HttpAuthMiddleware(object):
         return self._accept(request)
 
 class CookieMiddleware(object):
-    hmac_secret_key     = settings.COOKIE_MIDDLEWARE['secret_key']
-    controlled_cookies  = settings.COOKIE_MIDDLEWARE['controlled_cookies']
-    logout_page         = settings.LOGOUT_PAGE
-    meta_name			= settings.META_COOKIE
-    pair_name			= settings.PAIR_COOKIE
+    hmac_secret_key = settings.COOKIE_MIDDLEWARE['secret_key']
+    controlled_cookies = settings.COOKIE_MIDDLEWARE['controlled_cookies']
+    logout_page = settings.LOGOUT_PAGE
+    meta_name = settings.META_COOKIE
+    pair_name = settings.PAIR_COOKIE
     is_request_rewriting = settings.REQUEST_REWRITING
 
     def process_request(self, request):
@@ -140,7 +140,7 @@ class CookieMiddleware(object):
             #register setted cookie
             c = response.cookies[cookie_name]
             WAF_ALPHA[c.key] = {}
-            WAF_ALPHA[c.key]['path']   = c['path']
+            WAF_ALPHA[c.key]['path'] = c['path']
             WAF_ALPHA[c.key]['domain'] = c['domain']
             WAF_ALPHA[c.key]['secure'] = c['secure']
 
@@ -232,7 +232,7 @@ class CookieMiddleware(object):
         waf_cookie = copy(cookie)
         waf_cookie.key = cookie.key + self.pair_name
         try:
-            expires_date =  datetime.strptime(cookie['expires'], "%a, %d-%b-%Y %H:%M:%S %Z")
+            expires_date = datetime.strptime(cookie['expires'], "%a, %d-%b-%Y %H:%M:%S %Z")
             # round delta to the seconds to get UNIX timestamp
             expires = int((expires_date - datetime(1970,1,1)).total_seconds())
         except: 
@@ -242,7 +242,7 @@ class CookieMiddleware(object):
         return cookie
 
     def set_WAF_ALPHA_value(self, response, value):
-        hmac_value  = hmac.new(self.hmac_secret_key, msg=value).hexdigest()
+        hmac_value = hmac.new(self.hmac_secret_key, msg=value).hexdigest()
         response.set_cookie(self.meta_name,hmac_value+"|"+value)
 
     #set and unset Cookie.Morsel objects
@@ -278,17 +278,17 @@ class CookieMiddleware(object):
         return undumped
 
 class CookieAgregationMiddleware(object):
-    hmac_secret_key     = settings.COOKIE_MIDDLEWARE['secret_key']
-    controlled_cookies  = settings.COOKIE_MIDDLEWARE['controlled_cookies']
-    logout_page         = settings.LOGOUT_PAGE
-    meta_name			= settings.META_COOKIE
+    hmac_secret_key = settings.COOKIE_MIDDLEWARE['secret_key']
+    controlled_cookies = settings.COOKIE_MIDDLEWARE['controlled_cookies']
+    logout_page = settings.LOGOUT_PAGE
+    meta_name = settings.META_COOKIE
     is_request_rewriting = settings.REQUEST_REWRITING
 
     def create_logout_request(self, request):
         request.path = self.logout_page
 
     def process_request(self, request):
-        if self.is_request_valid(request) :
+        if self.is_request_valid(request):
             return
     
         if not self.is_request_rewriting:
@@ -372,7 +372,6 @@ class CookieAgregationMiddleware(object):
             return False
         
         WAF_ALPHA = self.load_dump(request.COOKIES[self.meta_name][33:])
-        
         WAF_ALPHA_HMAC = self.extract_hmac(WAF_ALPHA, '.'+request.META['SERVER_NAME'], request.path)
         
         cookies = "|"
