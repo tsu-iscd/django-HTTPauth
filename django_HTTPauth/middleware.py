@@ -288,14 +288,17 @@ class CookieAgregationMiddleware(object):
         request.path = self.logout_page
 
     def process_request(self, request):
-        if not self.is_request_valid(request) :
-            if not self.is_request_rewriting:
-                self.create_logout_request(request)
-                request.__forbidden = True
+        if self.is_request_valid(request) :
+            return
+    
+        if not self.is_request_rewriting:
+            self.create_logout_request(request)
+            request.__forbidden = True
+            return
         
-            for c in self.controlled_cookies:
-                if c in request.COOKIES:
-                    del request.COOKIES[c]
+        for c in self.controlled_cookies:
+            if c in request.COOKIES:
+                del request.COOKIES[c]
     
     def unset_controlled_cookies(self, response):
         cookies = self.controlled_cookies
@@ -370,7 +373,7 @@ class CookieAgregationMiddleware(object):
         
         WAF_ALPHA = self.load_dump(request.COOKIES[self.meta_name][33:])
         
-        WAF_ALPHA_HMAC = self.get_hmac(WAF_ALPHA, '.'+request.META['SERVER_NAME'], request.path)
+        WAF_ALPHA_HMAC = self.extract_hmac(WAF_ALPHA, '.'+request.META['SERVER_NAME'], request.path)
         
         cookies = "|"
         for c in controlled_cookies:
@@ -378,23 +381,24 @@ class CookieAgregationMiddleware(object):
 
         return self.check_hmac(WAF_ALPHA_HMAC, cookies)
 
-    def get_hmac(self, WAF_ALPHA, cur_domain, cur_path):
+    #in both cases we will extract hmac value for the longest match
+    #so we need initilize values with len() == 0
+    def extract_hmac(self, WAF_ALPHA, cur_domain, cur_path):
         domain = ""
-        path = ""
         for d in WAF_ALPHA:
             if len(d) < len(domain):
                 continue
+            #look for domain from the end
             if re.search(d+'$', cur_domain):
                 domain = d
+        path = ""
         for p in WAF_ALPHA[domain]:
             if len(p) < len(path):
                 continue
+            #and look for path from the begining
             if re.match(p, cur_path):
                 path = p
         return WAF_ALPHA[domain][path]
-
-    def is_cookie_valid(self, request, WAF_ALPHA, key):    
-        return True
 
     def check_hmac(self, cur_hmac, value):
         if cur_hmac != hmac.new(self.hmac_secret_key, msg=value).hexdigest():
