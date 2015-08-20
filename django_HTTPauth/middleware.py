@@ -105,11 +105,13 @@ class CookieMiddleware(object):
     is_request_rewriting = settings.REQUEST_REWRITING
 
     def process_request(self, request):
-        if not self.is_request_valid(request) and not self.is_request_rewriting:
+        if self.is_request_valid(request):
+            return
+        if not self.is_request_rewriting:
             self.create_logout_request(request)
             request.__forbidden = True
             return
-        # unwanted_cookies
+        # all cookies that should not be passed to web application 
         for c in request.__unwanted_cookies:
             del request.COOKIES[c]
 
@@ -151,8 +153,8 @@ class CookieMiddleware(object):
         request.__cookies_for_unset = [{"key":self.meta_name,"path":"/","domain": None}]
 
     def unset_unnecessary_cookies(self, response, unnecessary_cookies):
-        for i in unnecessary_cookies:
-            response.delete_cookie(i['key'],i['path'],i['domain'])
+        for c in unnecessary_cookies:
+            response.delete_cookie(c['key'],c['path'],c['domain'])
         return response
 
     def get_controlled_cookies(self,request):
@@ -173,12 +175,11 @@ class CookieMiddleware(object):
         #if it contains controoled cookies but not ~WAF~ALPHA
         if self.meta_name not in request.COOKIES:
             request.__unwanted_cookies = controlled_cookies
-            return True
+            return False
         
         #check for ~WAF~ALPHA integrity
         if not self.check_hmac(request.COOKIES[self.meta_name][:32], request.COOKIES[self.meta_name][33:] ):
-            if self.is_request_rewriting:
-                request.__unwanted_cookies = controlled_cookies
+            request.__unwanted_cookies = controlled_cookies
             return False
         
         WAF_ALPHA = self.load_dump(request.COOKIES[self.meta_name][33:])
@@ -189,9 +190,8 @@ class CookieMiddleware(object):
                 continue
             if not self.is_cookie_valid(request, WAF_ALPHA, c):
                 request.__unwanted_cookies[c] = request.COOKIES[c]
-                if self.is_request_rewriting: 
-                    continue
-                return False
+                if not self.is_request_rewriting: 
+                    return False
         return True
         
     def is_path_invalid(self, cookie_path, request_path):
@@ -215,19 +215,13 @@ class CookieMiddleware(object):
             waf_cookie = request.COOKIES[key+self.pair_name]
         else: 
             return False
-        
-        p = {}
-        try:
-            p['expires'] = waf_cookie[33:]
-        except:
-            return False
-        
         #check for ~WAF cookie integrity
         if not self.check_hmac(waf_cookie[:32],request.COOKIES[key]+waf_cookie[33:]):
             return False
         #check whether expires was extended
-        if p['expires'] != 's':
-            if datetime.fromtimestamp(float(p['expires'])) < datetime.now():
+        expires = waf_cookie[33:]
+        if expires != 's':
+            if datetime.fromtimestamp(float(expires)) < datetime.now():
                 return False
         return True
 
@@ -235,10 +229,16 @@ class CookieMiddleware(object):
         return str(hmac_value) == str(hmac.new(self.hmac_secret_key, msg=value).hexdigest())
     
     def create_waf_cookie(self,cookie):
-        cookie.key = cookie.key + self.pair_name
-        try:    expires =  int((datetime.strptime(cookie['expires'], "%a, %d-%b-%Y %H:%M:%S %Z") - datetime(1970,1,1)).total_seconds()) 
-        except: expires = "s"
-        cookie.value = hmac.new(self.hmac_secret_key, msg=cookie.value+str(expires)).hexdigest()+ "|" + str(expires)
+        waf_cookie = copy(cookie)
+        waf_cookie.key = cookie.key + self.pair_name
+        try:
+            expires_date =  datetime.strptime(cookie['expires'], "%a, %d-%b-%Y %H:%M:%S %Z")
+            # round delta to the seconds to get UNIX timestamp
+            expires = int((expires_date - datetime(1970,1,1)).total_seconds())
+        except: 
+            expires = "s" # s for session
+        waf_hmac = hmac.new(self.hmac_secret_key, msg=cookie.value+str(expires)).hexdigest()
+        waf_cookie.value = waf_hmac+ "|" + str(expires)
         return cookie
 
     def set_WAF_ALPHA_value(self, response, value):
