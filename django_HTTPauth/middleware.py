@@ -111,7 +111,7 @@ class CookieMiddleware(object):
             self.create_logout_request(request)
             request.__forbidden = True
             return
-        # all cookies that should not be passed to web application 
+        #all cookies that should not be passed to web application 
         for c in request.__unwanted_cookies:
             del request.COOKIES[c]
 
@@ -185,14 +185,17 @@ class CookieMiddleware(object):
         WAF_ALPHA = self.load_dump(request.COOKIES[self.meta_name][33:])
         
         for c in controlled_cookies:
-            if c not in WAF_ALPHA:
-                request.__unwanted_cookies[c] = request.COOKIES[c]
-                continue
-            if not self.is_cookie_valid(request, WAF_ALPHA, c):
-                request.__unwanted_cookies[c] = request.COOKIES[c]
+            if c not in WAF_ALPHA or not self.is_cookie_valid(request, WAF_ALPHA, c):
                 if not self.is_request_rewriting: 
                     return False
-        return True
+                else:
+                    request.__unwanted_cookies[c] = request.COOKIES[c]
+        
+        #returns false if there is something to rewrite         
+        if bool(request.__unwanted_cookies):
+            return False
+        else:
+            return True
         
     def is_path_invalid(self, cookie_path, request_path):
         return not(re.match(cookie_path, request_path))
