@@ -239,7 +239,7 @@ class CookieMiddleware(object):
             expires = "s" # s for session
         waf_hmac = hmac.new(self.hmac_secret_key, msg=cookie.value+str(expires)).hexdigest()
         waf_cookie.value = waf_hmac+ "|" + str(expires)
-        return cookie
+        return waf_cookie
 
     def set_WAF_ALPHA_value(self, response, value):
         hmac_value = hmac.new(self.hmac_secret_key, msg=value).hexdigest()
