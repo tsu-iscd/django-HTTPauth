@@ -118,9 +118,11 @@ class CookieMiddleware(object):
     def process_response(self, request, response):
         try:    is_forbidden = request.__forbidden
         except: is_forbidden = False
-        if is_forbidden: 
+        if is_forbidden:
+            if not self.is_request_rewriting:
+                 response = self.create_failure_response(response)
             return self.unset_unnecessary_cookies(response, request.__cookies_for_unset)
-        
+      
         try:
             WAF_ALPHA = self.load_dump(request.COOKIES[self.meta_name][33:])
         except:
@@ -148,7 +150,17 @@ class CookieMiddleware(object):
             self.set_WAF_ALPHA_value(response, self.dump(WAF_ALPHA))
         return response
 
+    def create_failure_response(self, response):
+        failure_response =  HttpResponseForbidden()
+        failure_response.write("Request rewriting feature in the CookieMiddleware is disabled.")
+        failure_response.write("Please delete all your cookies to continue using the web site")
+        #save cookies that was unset after logout request
+        failure_response.cookies = response.cookies
+        return failure_response
+
     def create_logout_request(self, request):
+        request.method = 'GET'
+        request.path_info = self.logout_page
         request.path = self.logout_page
         request.__cookies_for_unset = [{"key":self.meta_name,"path":"/","domain": None}]
 
