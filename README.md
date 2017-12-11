@@ -1,11 +1,11 @@
 django-HTTPauth
 ===============
 
-##Brief description
+## Brief description
 
 HTTP messages authentication mechanism for Django based on HMAC and attribute based access control (ABAC)
 
-##Main features:
+## Main features:
 * Strict protection against CSRF attack
 * CSRF-tokens protection based on the following properties
   * token time-to-live - protection against replay attacks
@@ -19,20 +19,20 @@ HTTP messages authentication mechanism for Django based on HMAC and attribute ba
 * Reducing attacks surface
 * COOKIE manipulation protection
 
-##Installation
+## Installation
 1. Download and unpack django-HTTPauth to your django project.
 2. Replace 'django.middleware.csrf.CsrfViewMiddleware' line by 'signed\_csrf.middleware.HttpAuthMiddleware' in MIDDLEWARE\_CLASSES tuple in settings.py.
 3. Add 'signed\_csrf.middleware.CookieMiddleware' line to the top of MIDDLEWARE\_CLASSES tuple in settings.py.
 
-##Configuration
+## Configuration
 
-###HTTP authentication mechanism
+### HTTP authentication mechanism
 
 There are a few ways to configure policy of the protected form:
 * Use dictionary
 * Use decorators
 
-####Using dictionary
+#### Use dictionary
 Add a dictionary with a name policy to the protected form. There are several options which can be used in the policy:
 
 1. **object** - required - identificator of the form. Regexp of form action URL.
@@ -71,7 +71,7 @@ class ClientForm(forms.Form):
              }
 ```
 
-####Using decorators
+#### Use decorators
 Decorators can be used as an alternative mechanism of form configuration. There are the following decorators:
 
 1. **name\_protection** - optional - policy\_name_protection(True|False).
@@ -92,7 +92,7 @@ class ClientForm(forms.Form):
              }
 ```
 
-###COOKIES manipulation protection
+### COOKIES manipulation protection
 Add COOKIE_MIDDLEWARE and LOGOUT_PAGE variables to settings.py.
 
 Example:
@@ -105,7 +105,7 @@ COOKIE_MIDDLEWARE = {
 LOGOUT_PAGE = "/accounts/logout/" #logout URI
 ```
 
-##Bibliography
+## Bibliography
 * [Vladimir Kochetkov. How to Develop a Secure Web Application and Stay in Mind?] (http://www.slideshare.net/kochetkov.vladimir/how-to-develop-a-secure-web-application-and-stay-in-mind-phdays-3)
 * [Jim Monico, Eoin Keary. Form Processing and Workflows](http://secappdev.org/handouts/2014/Jim%20Manico/HTML%20Forms%20and%20Workflows%20v3.pdf)
 * [TrustWave’s SpiderLabs. HMAC Token Protection](http://blog.spiderlabs.com/2014/01/modsecurity-advanced-topic-of-the-week-hmac-token-protection.html)
